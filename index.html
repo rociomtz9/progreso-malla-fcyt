@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Seguridad: sin recursos de terceros, sin conexiones salientes, sin scripts inline.
+         Los datos del usuario nunca salen del navegador. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>Mi malla · Ingeniería en Informática · UNCA</title>
+    <meta
+      name="description"
+      content="Seguimiento de avance de la malla curricular de Ingeniería en Informática (UNCA, Plan 2010): marcá materias aprobadas y habilitadas para final."
+    />
+
+    <!-- Tipografías auto-alojadas (sin Google Fonts: nada se pide a terceros). -->
+    <link rel="stylesheet" href="css/fonts.css" />
+
+    <!-- Estilos (modulares) -->
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header id="header"><!-- render dinámico --></header>
+      <nav id="toolbar"><!-- leyenda + acciones --></nav>
+      <div id="filtros"><!-- buscador + chips de filtro --></div>
+      <main id="board"><!-- columnas por semestre --></main>
+    </div>
+
+    <!-- Lógica (ES modules). Requiere servir por http(s); ver README. -->
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

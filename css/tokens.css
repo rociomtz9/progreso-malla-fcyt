@@ -1,0 +1,36 @@
+/* tokens.css — Variables de diseño. Cambiá acá para retemear toda la app. */
+:root {
+  /* Superficies */
+  --bg: #e9edf2;
+  --surface: #ffffff;
+  --surface-2: #f4f6f9;
+  --line: #d8dee6;
+  --ink: #1b2330;
+  --muted: #5c6779;
+
+  /* Acentos de estado */
+  --accent: #5b53c9;      /* habilitada para final / resaltado */
+  --aprobada: #2e6e66;    /* aprobada */
+  --aprobada-soft: #e3efed;
+
+  /* Colores de área (heredados de la malla original) */
+  --area-ci: #c2622e;     /* Ciencias de la Ingeniería */
+  --area-cb: #d99a28;     /* Ciencias Básicas */
+  --area-ai: #2e7cc2;     /* Aplicaciones de la Ingeniería */
+  --area-co: #4e9a5a;     /* Complementos de la Formación */
+
+  /* Tipografía */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Forma y profundidad */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --sombra: 0 1px 2px rgba(27, 35, 48, 0.06), 0 4px 14px rgba(27, 35, 48, 0.05);
+  --sombra-fuerte: 0 6px 22px rgba(27, 35, 48, 0.16);
+
+  /* Espaciado */
+  --gap: 14px;
+}

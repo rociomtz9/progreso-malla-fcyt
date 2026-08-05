@@ -1,0 +1,20 @@
+# Dependencias / build (esta app no usa ninguno, pero por las dudas)
+node_modules/
+dist/
+build/
+
+# Vercel
+.vercel/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# Temporales de trabajo
+_*.mjs
+_*.xlsx
+*.log
