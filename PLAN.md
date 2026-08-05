@@ -1,6 +1,6 @@
 # PLAN — Tracker de Malla UNCA
 
-Documento para revisar antes de seguir con Claude Code. Resume **qué decidimos**,
+Documento de trabajo del proyecto. Resume **qué decidimos**,
 **qué quedó hecho hoy** y **qué falta / se puede agregar**.
 
 ---
@@ -97,7 +97,7 @@ El estado visual final que ve el usuario combina ambos:
       dataValidations). La columna Estado refleja el estado calculado (`estadoVisual`). Botón
       "Descargar Excel" en el toolbar.
 
-## 7. Qué falta / ideas para Claude Code mañana 🔜
+## 7. Qué falta / ideas a futuro 🔜
 
 Ordenadas por valor. No es obligatorio hacer todas; elegí según el tiempo.
 
