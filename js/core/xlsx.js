@@ -212,12 +212,15 @@ function construirHoja(progreso) {
   return (
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
     `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+    `<dimension ref="A1:O${FILAN}"/>` +
     `<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` +
     `<sheetFormatPr defaultRowHeight="15"/>` +
     cols +
     `<sheetData>${filasXML}</sheetData>` +
-    validaciones +
+    // OOXML exige este orden: mergeCells ANTES de dataValidations. Invertirlo hace
+    // que Excel marque el archivo como dañado y lo "repare" (vaciándolo).
     `<mergeCells count="8">${merges}</mergeCells>` +
+    validaciones +
     `</worksheet>`
   );
 }
