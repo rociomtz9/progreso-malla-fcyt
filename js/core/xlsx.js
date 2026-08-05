@@ -2,30 +2,38 @@
  * xlsx.js — Genera el Excel de "Seguimiento de materias" para el usuario actual.
  * Puro (sin DOM): arma los XML del formato OOXML y los empaqueta con zip.js.
  *
- * Replica la planilla personal: hoja "Plan de estudios" con la tabla de las 84
- * materias (con columnas amarillas editables: Estado, Nota 1, Nota 2, Observaciones),
- * validaciones (lista desplegable de estado; notas 1..5) y un bloque RESUMEN con
- * fórmulas (conteos, %, promedio y avance por curso).
- *
- * El estado del usuario en la app se vuelca a la columna "Estado":
- *   aprobada → "Aprobado" · regular → "A Final" · resto → "Por Cursar".
- * (El dropdown conserva "Cursando" para ajustarlo a mano en Excel si hace falta.)
+ * Hoja "Plan de estudios" con la tabla de las 84 materias y una columna Estado que
+ * refleja el estado calculado por la app (Aprobada / Habilitada p/ final /
+ * Disponible / Bloqueada), coloreada por formato condicional. Más una columna libre
+ * de Observaciones y un bloque RESUMEN con conteos, % y avance por curso.
  */
 
 import { MATERIAS, CARRERA } from "../data/malla.js";
-import { ESTADOS } from "./rules.js";
+import { estadoVisual, ESTADOS_VISUALES } from "./rules.js";
 import { crearZip } from "./zip.js";
 
 const HOJA = "Plan de estudios";
 const FILA0 = 4; // primera fila de datos
 const FILAN = FILA0 + MATERIAS.length - 1; // última fila de datos (87)
 
-/** Mapea el progreso de la app al texto del dropdown de la planilla. */
+// Etiquetas visibles de los 4 estados (mismo modelo que la app).
+const ESTADO_ETIQUETA = {
+  [ESTADOS_VISUALES.APROBADA]: "Aprobada",
+  [ESTADOS_VISUALES.REGULAR]: "Habilitada p/ final",
+  [ESTADOS_VISUALES.DISPONIBLE]: "Disponible",
+  [ESTADOS_VISUALES.BLOQUEADA]: "Bloqueada",
+};
+// Orden para el resumen y los colores del formato condicional.
+const ESTADOS_ORDEN = [
+  ESTADOS_VISUALES.APROBADA,
+  ESTADOS_VISUALES.REGULAR,
+  ESTADOS_VISUALES.DISPONIBLE,
+  ESTADOS_VISUALES.BLOQUEADA,
+].map((e) => ESTADO_ETIQUETA[e]);
+
+/** Estado calculado (visual) de una materia, como texto para la planilla. */
 function estadoTexto(codigo, progreso) {
-  const e = progreso[codigo];
-  if (e === ESTADOS.APROBADA) return "Aprobado";
-  if (e === ESTADOS.REGULAR) return "A Final";
-  return "Por Cursar";
+  return ESTADO_ETIQUETA[estadoVisual(codigo, progreso)];
 }
 
 /** Escapa texto para XML. */
@@ -86,19 +94,19 @@ function celdaXML(c) {
 function construirHoja(progreso) {
   cellsPorFila.clear();
 
-  // Fila 1: título (merged A1:J1). Fila 2: instrucciones (merged A2:J2).
+  // Fila 1: título (merged A1:H1). Fila 2: instrucciones (merged A2:H2).
   txt(1, 1, `${CARRERA.carrera} · UNCA · FCyT · Seguimiento de materias`, 1);
   txt(
     1,
     2,
-    "Completá solo las columnas amarillas: Estado (lista desplegable), Nota 1, Nota 2 y Observaciones.   " +
-      "Nota 2 = segunda cursada/rendida cuando la primera fue aplazo.   Escala 1 a 5.   " +
-      "Ejemplo: Estado = Aprobado · Nota 1 = 1 · Nota 2 = 4.",
+    "El Estado refleja tu avance en la app y se colorea solo: Aprobada (verde), " +
+      "Habilitada p/ final (violeta), Disponible (azul), Bloqueada (rojo). " +
+      "Podés ajustarlo con la lista desplegable. Observaciones es texto libre.",
     2
   );
 
   // Fila 3: encabezados de la tabla.
-  ["Curso", "Sem.", "Código", "Materia", "Área", "Hs.", "Estado", "Nota 1", "Nota 2", "Observaciones"].forEach(
+  ["Curso", "Sem.", "Código", "Materia", "Área", "Hs.", "Estado", "Observaciones"].forEach(
     (h, i) => txt(i + 1, 3, h, 3)
   );
 
@@ -111,59 +119,41 @@ function construirHoja(progreso) {
     txt(4, f, m.nombre, 5);
     txt(5, f, m.area, 4);
     num(6, f, m.tchs, 4);
-    txt(7, f, estadoTexto(m.codigo, progreso), 6); // Estado (amarillo, dropdown)
-    txt(8, f, "", 6); // Nota 1 (amarillo)
-    txt(9, f, "", 6); // Nota 2 (amarillo)
-    txt(10, f, "", 6); // Observaciones (amarillo)
+    txt(7, f, estadoTexto(m.codigo, progreso), 5); // Estado (color por formato condicional + dropdown)
+    txt(8, f, "", 6); // Observaciones (amarillo, libre)
   });
 
-  // ── Bloque RESUMEN (columnas L=12, M=13, N=14, O=15) ──────────────────────
+  // ── Bloque RESUMEN (columnas J=10, K=11, L=12, M=13) ──────────────────────
   const G = `$G$${FILA0}:$G$${FILAN}`;
   const A = `$A$${FILA0}:$A$${FILAN}`;
   const C = `$C$${FILA0}:$C$${FILAN}`;
-  const H = `$H$${FILA0}:$H$${FILAN}`;
-  const I = `$I$${FILA0}:$I$${FILAN}`;
 
-  txt(12, 3, "RESUMEN", 7); // L3:N3 merged
-  txt(12, 4, "Estado", 8);
-  txt(13, 4, "Cant.", 8);
-  txt(14, 4, "%", 8);
+  txt(10, 3, "RESUMEN", 7); // J3:L3 merged
+  txt(10, 4, "Estado", 8);
+  txt(11, 4, "Cant.", 8);
+  txt(12, 4, "%", 8);
 
-  const estados = ["Aprobado", "A Final", "Cursando", "Por Cursar"];
-  estados.forEach((e, i) => {
+  ESTADOS_ORDEN.forEach((e, i) => {
     const f = 5 + i;
-    txt(12, f, e, 9);
-    fx(13, f, `COUNTIF(${G},$L${f})`, 10);
-    fx(14, f, `IFERROR($M${f}/$M$9,0)`, 11);
+    txt(10, f, e, 9); // etiqueta (coloreada por formato condicional, ver J5:J8)
+    fx(11, f, `COUNTIF(${G},$J${f})`, 10);
+    fx(12, f, `IFERROR($K${f}/$K$9,0)`, 11);
   });
-  txt(12, 9, "TOTAL", 9);
-  fx(13, 9, `COUNTA(${C})`, 10);
-  fx(14, 9, "IFERROR(SUM(N5:N8),0)", 11);
+  txt(10, 9, "TOTAL", 9);
+  fx(11, 9, `COUNTA(${C})`, 10);
+  fx(12, 9, "IFERROR(SUM(L5:L8),0)", 11);
 
-  txt(12, 11, "PROMEDIO GENERAL", 7); // L11:N11 merged
-  fx(
-    12,
-    12, // L12:N12 merged
-    `IFERROR((SUMIF(${G},"Aprobado",${H})+SUMIF(${G},"Aprobado",${I}))/` +
-      `(COUNTIFS(${G},"Aprobado",${H},">0")+COUNTIFS(${G},"Aprobado",${I},">0")),"—")`,
-    9
-  );
-  txt(12, 13, "Notas computadas", 9);
-  fx(13, 13, `COUNTIFS(${G},"Aprobado",${H},">0")+COUNTIFS(${G},"Aprobado",${I},">0")`, 10); // M13:N13 merged
-  txt(12, 14, "Aplazos (notas 1)", 9);
-  fx(13, 14, `COUNTIF(${H},1)+COUNTIF(${I},1)`, 10); // M14:N14 merged
-
-  txt(12, 16, "AVANCE POR CURSO", 7); // L16:O16 merged
-  txt(12, 17, "Curso", 8);
-  txt(13, 17, "Aprob.", 8);
-  txt(14, 17, "Total", 8);
-  txt(15, 17, "%", 8);
+  txt(10, 11, "AVANCE POR CURSO", 7); // J11:M11 merged
+  txt(10, 12, "Curso", 8);
+  txt(11, 12, "Aprob.", 8);
+  txt(12, 12, "Total", 8);
+  txt(13, 12, "%", 8);
   for (let curso = 1; curso <= 5; curso++) {
-    const f = 17 + curso;
-    num(12, f, curso, 10);
-    fx(13, f, `COUNTIFS(${A},$L${f},${G},"Aprobado")`, 10);
-    fx(14, f, `COUNTIF(${A},$L${f})`, 10);
-    fx(15, f, `IFERROR($M${f}/$N${f},0)`, 11);
+    const f = 12 + curso;
+    num(10, f, curso, 10);
+    fx(11, f, `COUNTIFS(${A},$J${f},${G},"Aprobada")`, 10);
+    fx(12, f, `COUNTIF(${A},$J${f})`, 10);
+    fx(13, f, `IFERROR($K${f}/$L${f},0)`, 11);
   }
 
   // ── Serializar filas ──────────────────────────────────────────────────────
@@ -176,20 +166,26 @@ function construirHoja(progreso) {
     })
     .join("");
 
-  const merges = [
-    "A1:J1", "A2:J2",
-    "L3:N3", "L11:N11", "L12:N12", "M13:N13", "M14:N14", "L16:O16",
-  ]
-    .map((r) => `<mergeCell ref="${r}"/>`)
-    .join("");
+  const mergeRefs = ["A1:H1", "A2:H2", "J3:L3", "J11:M11"];
+  const merges = mergeRefs.map((r) => `<mergeCell ref="${r}"/>`).join("");
 
-  // Validaciones: dropdown de estado y notas 1..5.
+  // Formato condicional: colorea cada estado (en la columna Estado y en la leyenda
+  // del resumen J5:J8) según su valor. dxfId 0..3 = Aprobada/Habilitada/Disponible/Bloqueada.
+  const cfSqref = `G${FILA0}:G${FILAN} J5:J8`;
+  const conditional =
+    `<conditionalFormatting sqref="${cfSqref}">` +
+    ESTADOS_ORDEN.map(
+      (e, i) =>
+        `<cfRule type="cellIs" dxfId="${i}" priority="${i + 1}" operator="equal">` +
+        `<formula>"${e}"</formula></cfRule>`
+    ).join("") +
+    `</conditionalFormatting>`;
+
+  // Validación: solo la lista de estados en la columna Estado.
   const validaciones =
-    `<dataValidations count="2">` +
+    `<dataValidations count="1">` +
     `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" sqref="G${FILA0}:G${FILAN}">` +
-    `<formula1>"Aprobado,A Final,Cursando,Por Cursar"</formula1></dataValidation>` +
-    `<dataValidation type="whole" allowBlank="1" showInputMessage="1" showErrorMessage="1" operator="between" sqref="H${FILA0}:I${FILAN}">` +
-    `<formula1>1</formula1><formula2>5</formula2></dataValidation>` +
+    `<formula1>"${ESTADOS_ORDEN.join(",")}"</formula1></dataValidation>` +
     `</dataValidations>`;
 
   const cols =
@@ -200,26 +196,25 @@ function construirHoja(progreso) {
     `<col min="4" max="4" width="44" customWidth="1"/>` +
     `<col min="5" max="5" width="7" customWidth="1"/>` +
     `<col min="6" max="6" width="6" customWidth="1"/>` +
-    `<col min="7" max="7" width="13" customWidth="1"/>` +
-    `<col min="8" max="9" width="9" customWidth="1"/>` +
-    `<col min="10" max="10" width="46" customWidth="1"/>` +
-    `<col min="11" max="11" width="3" customWidth="1"/>` +
-    `<col min="12" max="12" width="18" customWidth="1"/>` +
-    `<col min="13" max="13" width="10" customWidth="1"/>` +
-    `<col min="14" max="15" width="8" customWidth="1"/>` +
+    `<col min="7" max="7" width="20" customWidth="1"/>` + // Estado
+    `<col min="8" max="8" width="40" customWidth="1"/>` + // Observaciones
+    `<col min="9" max="9" width="3" customWidth="1"/>` + // separador
+    `<col min="10" max="10" width="20" customWidth="1"/>` + // RESUMEN etiqueta
+    `<col min="11" max="11" width="9" customWidth="1"/>` +
+    `<col min="12" max="13" width="8" customWidth="1"/>` +
     `</cols>`;
 
   return (
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
     `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
-    `<dimension ref="A1:O${FILAN}"/>` +
+    `<dimension ref="A1:M${FILAN}"/>` +
     `<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` +
     `<sheetFormatPr defaultRowHeight="15"/>` +
     cols +
     `<sheetData>${filasXML}</sheetData>` +
-    // OOXML exige este orden: mergeCells ANTES de dataValidations. Invertirlo hace
-    // que Excel marque el archivo como dañado y lo "repare" (vaciándolo).
-    `<mergeCells count="8">${merges}</mergeCells>` +
+    // OOXML exige este orden: mergeCells → conditionalFormatting → dataValidations.
+    `<mergeCells count="${mergeRefs.length}">${merges}</mergeCells>` +
+    conditional +
     validaciones +
     `</worksheet>`
   );
@@ -307,6 +302,14 @@ const STYLES =
   `<xf numFmtId="9" fontId="0" fillId="0" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>` + // 11 porcentaje
   `</cellXfs>` +
   `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>` +
+  // dxfs: colores del formato condicional por estado (0..3).
+  // En dxf el relleno se define con <bgColor>. Aprobada/Habilitada/Disponible/Bloqueada.
+  `<dxfs count="4">` +
+  `<dxf><font><color rgb="FF2E6E66"/></font><fill><patternFill><bgColor rgb="FFE3EFED"/></patternFill></fill></dxf>` +
+  `<dxf><font><color rgb="FF5B53C9"/></font><fill><patternFill><bgColor rgb="FFE7E5F7"/></patternFill></fill></dxf>` +
+  `<dxf><font><color rgb="FF2E7CC2"/></font><fill><patternFill><bgColor rgb="FFDCEAF6"/></patternFill></fill></dxf>` +
+  `<dxf><font><color rgb="FFB0413E"/></font><fill><patternFill><bgColor rgb="FFF7E4E4"/></patternFill></fill></dxf>` +
+  `</dxfs>` +
   `</styleSheet>`;
 
 /**

@@ -88,12 +88,13 @@ El estado visual final que ve el usuario combina ambos:
       (evita "pasarse"). Accesible: `role=menu`/`menuitemradio`, flechas, Escape, click afuera,
       foco devuelto a la tarjeta. El ⤳ de correlativas sigue intacto.
 - [x] **Exportar a Excel** (`js/core/zip.js`, `js/core/xlsx.js`): genera **en el navegador**
-      (sin dependencias ni servidor) un `.xlsx` que replica la planilla personal de seguimiento:
-      hoja "Plan de estudios", 84 materias, columnas amarillas editables (Estado con lista
-      desplegable, Nota 1/2, Observaciones), validaciones y bloque RESUMEN con fórmulas
-      (conteos, %, promedio, avance por curso). Un `.xlsx` es un ZIP de XML: `zip.js` escribe el
-      ZIP (método store + CRC32) y `xlsx.js` arma el OOXML. El estado de la app se vuelca a la
-      columna Estado (aprobada→Aprobado, regular→A Final, resto→Por Cursar). Botón
+      (sin dependencias ni servidor) un `.xlsx` con el seguimiento: hoja "Plan de estudios",
+      84 materias, columna **Estado** con los 4 estados de la app (Aprobada / Habilitada p/ final
+      / Disponible / Bloqueada) **coloreados por formato condicional** (verde/violeta/azul/rojo),
+      lista desplegable para ajustarlos, columna libre de Observaciones, y bloque RESUMEN con
+      conteos, % y avance por curso. Un `.xlsx` es un ZIP de XML: `zip.js` escribe el ZIP (store +
+      CRC32) y `xlsx.js` arma el OOXML (orden de esquema: mergeCells → conditionalFormatting →
+      dataValidations). La columna Estado refleja el estado calculado (`estadoVisual`). Botón
       "Descargar Excel" en el toolbar.
 
 ## 7. Qué falta / ideas para Claude Code mañana 🔜
