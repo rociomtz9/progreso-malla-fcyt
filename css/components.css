@@ -88,7 +88,7 @@
 /* ── Estados visuales ─────────────────────────────────────── */
 .estado-aprobada {
   background: var(--aprobada-soft);
-  border-color: #bcdcd6;
+  border-color: color-mix(in srgb, var(--aprobada) 35%, var(--line));
 }
 .estado-aprobada .card-nombre { color: var(--aprobada); }
 .estado-aprobada .card-estado {
@@ -128,9 +128,6 @@
 }
 .estado-bloqueada .card-area-bar {
   filter: saturate(0.3);
-}
-.estado-bloqueada .card-estado::before {
-  content: "🔒 ";
 }
 
 /* ── Resaltado de correlativas ────────────────────────────── */
@@ -342,6 +339,31 @@
 .btn-ghost {
   color: var(--muted);
 }
+
+/* ── Toggle de tema (sol / luna) ──────────────────────────── */
+.tema-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: var(--r-sm);
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.tema-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface-2);
+}
+/* En claro se ve la luna (pasar a oscuro); en oscuro, el sol (pasar a claro). */
+.tema-toggle .icono-sol { display: none; }
+.tema-toggle .icono-luna { display: block; }
+:root[data-theme="dark"] .tema-toggle .icono-sol { display: block; }
+:root[data-theme="dark"] .tema-toggle .icono-luna { display: none; }
 .btn-ghost:hover {
   border-color: #d98a8a;
   color: #b34a4a;

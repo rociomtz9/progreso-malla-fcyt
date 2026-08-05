@@ -33,4 +33,34 @@
 
   /* Espaciado */
   --gap: 14px;
+
+  /* Esquema para controles nativos (scrollbars, inputs). */
+  color-scheme: light;
+}
+
+/* ── Tema oscuro ──────────────────────────────────────────────
+   Se activa con [data-theme="dark"] en <html> (lo fija theme-init.js
+   antes de pintar, según preferencia guardada o del sistema).
+   Solo redefine variables: el resto del CSS ya las usa. */
+:root[data-theme="dark"] {
+  --bg: #0e131d;
+  --surface: #171e2b;
+  --surface-2: #202a3a;
+  --line: #2f3a4f;
+  --ink: #e7ebf3;
+  --muted: #9aa6bb;
+
+  --accent: #8b83f0;      /* violeta más brillante para fondo oscuro */
+  --aprobada: #57c3b2;    /* verde/teal más brillante */
+  --aprobada-soft: #16302c;
+
+  --area-ci: #e0834a;
+  --area-cb: #edb84a;
+  --area-ai: #56a4e6;
+  --area-co: #63b972;
+
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.3);
+  --sombra-fuerte: 0 6px 22px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
 }

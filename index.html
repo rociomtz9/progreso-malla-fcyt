@@ -10,6 +10,11 @@
       content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'"
     />
     <meta name="referrer" content="no-referrer" />
+
+    <!-- Aplica el tema (claro/oscuro) antes de pintar, para evitar parpadeo.
+         Script clásico y síncrono (no inline, cumple la CSP). -->
+    <script src="js/theme-init.js"></script>
+
     <title>Mi malla · Ingeniería en Informática · UNCA</title>
     <meta
       name="description"

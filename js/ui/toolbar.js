@@ -6,6 +6,7 @@ import { el } from "./dom.js";
 import { AREAS } from "../data/malla.js";
 import { getProgreso, reiniciar } from "../core/state.js";
 import { exportarExcel } from "../core/storage.js";
+import { crearToggleTema } from "./tema.js";
 
 const LEYENDA_ESTADOS = [
   ["aprobada", "Aprobada"],
@@ -55,7 +56,8 @@ export function renderToolbar(contenedor) {
         },
       },
       "Reiniciar"
-    )
+    ),
+    crearToggleTema()
   );
 
   contenedor.append(leyendaEstados, leyendaAreas, acciones);
