@@ -18,3 +18,5 @@ desktop.ini
 _*.mjs
 _*.xlsx
 *.log
+
+.vercel
